@@ -1,0 +1,67 @@
+{
+    "name": "aeunius/laravel-feriados-peru",
+    "description": "Feriados nacionales del Perú y cálculo de días hábiles para plazos administrativos en Laravel.",
+    "keywords": [
+        "laravel",
+        "peru",
+        "feriados",
+        "holidays",
+        "dias-habiles",
+        "business-days",
+        "plazos"
+    ],
+    "homepage": "https://github.com/Aeunius/laravel-feriados-peru",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alejandro Gonzales",
+            "homepage": "https://github.com/Aeunius"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "nesbot/carbon": "^3.8",
+        "spatie/laravel-package-tools": "^1.16.2"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.18",
+        "orchestra/testbench": "^10.0|^11.0",
+        "pestphp/pest": "^3.0|^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Aeunius\\FeriadosPeru\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Aeunius\\FeriadosPeru\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest",
+        "analyse": "phpstan analyse --memory-limit=1G",
+        "format": "pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aeunius\\FeriadosPeru\\FeriadosPeruServiceProvider"
+            ],
+            "aliases": {
+                "Feriados": "Aeunius\\FeriadosPeru\\Facades\\Feriados"
+            }
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
