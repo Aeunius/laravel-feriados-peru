@@ -69,8 +69,8 @@ notificación (art. 144). Por eso:
 - `esVencido()` compara contra hoy, en la zona horaria de la aplicación.
 
 Los días no laborables del sector público también cortan el plazo; ver
-[Días no laborables](#días-no-laborables). Los feriados regionales todavía no se
-excluyen.
+[Días no laborables](#días-no-laborables). Los feriados regionales cortan el
+plazo si los agregas; ver [Ajustar el calendario](#ajustar-el-calendario).
 
 ### Fin de semana
 
@@ -180,9 +180,62 @@ No hace falta esperar una versión nueva. Publica la configuración y agrégalos
 ],
 ```
 
-`tipo` es `no_laborable` (sector público, compensable) o `extraordinario` (un
-feriado para todos, por una sola vez). Si coincide con un feriado, gana el
+`tipo` es `no_laborable` (sector público, compensable), `extraordinario` (un
+feriado para todos, por una sola vez) o `regional` (un feriado solo donde opera
+tu aplicación, por una sola vez). Si coincide con un feriado, gana el
 feriado. Una fecha o un tipo mal escritos lanzan una excepción al arrancar.
+
+## Ajustar el calendario
+
+Cada aplicación puede adaptar el catálogo a su realidad desde
+`config/feriados-peru.php`, sin esperar una versión nueva.
+
+### Feriados regionales o locales
+
+El paquete solo trae los nacionales. Los de tu región o entidad que se repiten
+cada año van en `regionales`, y cortan los plazos como los nacionales (el art.
+145 de la Ley 27444 también excluye los feriados regionales):
+
+```php
+'regionales' => [
+    ['mes' => 9, 'dia' => 24, 'nombre' => 'Virgen de las Mercedes'],
+    ['mes' => 1, 'dia' => 18, 'nombre' => 'Aniversario de Lima', 'desde' => 2027],
+],
+```
+
+Quedan con `TipoFeriado::Regional`. Para uno de una sola fecha, usa
+`extraordinarios` con `'tipo' => 'regional'`.
+
+### Omitir feriados
+
+Para no considerar un feriado del paquete, ponlo en `omitir`, por su clave o
+por una fecha puntual:
+
+```php
+'omitir' => [
+    'fuerza_aerea',   // en todos los años
+    '2026-07-27',     // solo ese día: tu entidad trabajó el no laborable
+],
+```
+
+Las claves son `anio_nuevo`, `jueves_santo`, `viernes_santo`, `dia_del_trabajo`,
+`batalla_de_arica`, `san_pedro_y_san_pablo`, `fuerza_aerea`,
+`fiestas_patrias_28`, `fiestas_patrias_29`, `batalla_de_junin`,
+`santa_rosa_de_lima`, `combate_de_angamos`, `todos_los_santos`,
+`inmaculada_concepcion`, `batalla_de_ayacucho` y `navidad`. Cada `Feriado` la
+trae en `$feriado->clave`.
+
+Una clave o una fecha mal escritas lanzan una excepción al arrancar, para que
+un error de tipeo no pase desapercibido.
+
+Sin Laravel, las mismas opciones son argumentos de `Calendario::peru()`:
+
+```php
+Calendario::peru(
+    regionales: [['mes' => 9, 'dia' => 24, 'nombre' => 'Virgen de las Mercedes']],
+    omitir: ['fuerza_aerea'],
+);
+```
 
 ## Desarrollo
 

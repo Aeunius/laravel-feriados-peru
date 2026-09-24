@@ -11,6 +11,12 @@ enum TipoFeriado: string
     case Extraordinario = 'extraordinario';
 
     /**
+     * Feriado regional o local que agrega la aplicación y se repite cada año.
+     * También corta los plazos (Ley 27444, art. 145).
+     */
+    case Regional = 'regional';
+
+    /**
      * Día no laborable compensable del sector público, declarado por decreto
      * supremo. No es feriado: el sector privado trabaja salvo acuerdo, y los
      * decretos lo declaran hábil para efectos tributarios.

@@ -25,10 +25,18 @@ class FeriadosPeruServiceProvider extends PackageServiceProvider
             /** @var array<array{fecha: string, nombre: string, tipo: string, norma?: string}> $extraordinarios */
             $extraordinarios = config('feriados-peru.extraordinarios', []);
 
+            /** @var array<array{mes: int, dia: int, nombre: string, desde?: int}> $regionales */
+            $regionales = config('feriados-peru.regionales', []);
+
+            /** @var array<string> $omitir */
+            $omitir = config('feriados-peru.omitir', []);
+
             return Calendario::peru(
                 array_values($finDeSemana),
                 array_values($extraordinarios),
                 (bool) config('feriados-peru.no_laborables_inhabiles', true),
+                array_values($regionales),
+                array_values($omitir),
             );
         });
     }

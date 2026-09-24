@@ -12,8 +12,9 @@ use Illuminate\Support\Collection;
  * Motor de feriados y días hábiles, sin dependencia de Laravel: recibe el
  * catálogo de feriados y responde sobre fechas concretas.
  *
- * @phpstan-type Fijo array{mes: int, dia: int, nombre: string, desde?: int}
- * @phpstan-type Movil array{dias: int, nombre: string}
+ * @phpstan-type Fijo array{clave?: string, mes: int, dia: int, nombre: string, desde?: int, tipo?: TipoFeriado}
+ * @phpstan-type Movil array{clave?: string, dias: int, nombre: string}
+ * @phpstan-type Regional array{mes: int, dia: int, nombre: string, desde?: int}
  * @phpstan-type Extraordinario array{fecha: string, nombre: string, tipo: string, norma?: string}
  */
 final class Calendario
@@ -24,12 +25,16 @@ final class Calendario
     /** @var array<int, list<Feriado>> los extraordinarios, por año */
     private array $extraordinariosPorAnio = [];
 
+    /** @var array<string, true> claves y fechas Y-m-d que no se consideran */
+    private array $omitidos = [];
+
     /**
      * @param  list<Fijo>  $fijos
      * @param  list<Movil>  $moviles  días contados desde el domingo de Pascua
      * @param  list<int>  $finDeSemana  días inhábiles de la semana: 0 domingo … 6 sábado
-     * @param  list<Extraordinario>  $extraordinarios  tipo 'extraordinario' o 'no_laborable'
+     * @param  list<Extraordinario>  $extraordinarios  tipo 'extraordinario', 'regional' o 'no_laborable'
      * @param  bool  $noLaborablesInhabiles  si los días no laborables cortan los plazos
+     * @param  list<string>  $omitir  claves del catálogo o fechas AAAA-MM-DD que no se consideran
      */
     public function __construct(
         private readonly array $fijos,
@@ -37,6 +42,7 @@ final class Calendario
         private readonly array $finDeSemana = [CarbonInterface::SATURDAY, CarbonInterface::SUNDAY],
         private readonly array $extraordinarios = [],
         private readonly bool $noLaborablesInhabiles = true,
+        private readonly array $omitir = [],
     ) {
         foreach ($finDeSemana as $dia) {
             if ($dia < 0 || $dia > 6) {
@@ -48,9 +54,25 @@ final class Calendario
             throw new \InvalidArgumentException('El fin de semana no puede abarcar los 7 días: no quedaría ningún día hábil.');
         }
 
+        foreach ($fijos as $fijo) {
+            if (! checkdate($fijo['mes'], $fijo['dia'], 2001)) {
+                throw new \InvalidArgumentException("El feriado [{$fijo['nombre']}] tiene un día que no existe todos los años: {$fijo['dia']}/{$fijo['mes']}.");
+            }
+        }
+
         foreach ($extraordinarios as $extraordinario) {
             $feriado = self::extraordinario($extraordinario);
             $this->extraordinariosPorAnio[$feriado->fecha->year][] = $feriado;
+        }
+
+        $claves = array_filter(array_column([...$fijos, ...$moviles], 'clave'));
+
+        foreach ($omitir as $omitido) {
+            if (! in_array($omitido, $claves, true) && self::fechaValida($omitido) === null) {
+                throw new \InvalidArgumentException("No hay un feriado con la clave [{$omitido}] para omitir; usa una clave del catálogo o una fecha AAAA-MM-DD.");
+            }
+
+            $this->omitidos[$omitido] = true;
         }
     }
 
@@ -60,11 +82,15 @@ final class Calendario
      * @param  list<int>  $finDeSemana  días inhábiles de la semana: 0 domingo … 6 sábado
      * @param  list<Extraordinario>  $extraordinarios  se suman a los del paquete
      * @param  bool  $noLaborablesInhabiles  si los días no laborables cortan los plazos
+     * @param  list<Regional>  $regionales  feriados propios que se repiten cada año
+     * @param  list<string>  $omitir  claves del catálogo o fechas AAAA-MM-DD que no se consideran
      */
     public static function peru(
         array $finDeSemana = [CarbonInterface::SATURDAY, CarbonInterface::SUNDAY],
         array $extraordinarios = [],
         bool $noLaborablesInhabiles = true,
+        array $regionales = [],
+        array $omitir = [],
     ): self {
         $directorio = dirname(__DIR__, 2).'/resources/feriados';
 
@@ -77,7 +103,11 @@ final class Calendario
         /** @var list<Extraordinario> $delPaquete */
         $delPaquete = require $directorio.'/extraordinarios.php';
 
-        return new self($fijos, $moviles, $finDeSemana, [...$delPaquete, ...$extraordinarios], $noLaborablesInhabiles);
+        foreach ($regionales as $regional) {
+            $fijos[] = [...$regional, 'tipo' => TipoFeriado::Regional];
+        }
+
+        return new self($fijos, $moviles, $finDeSemana, [...$delPaquete, ...$extraordinarios], $noLaborablesInhabiles, $omitir);
     }
 
     /**
@@ -91,10 +121,10 @@ final class Calendario
     {
         return $inhabiles === $this->noLaborablesInhabiles
             ? $this
-            : new self($this->fijos, $this->moviles, $this->finDeSemana, $this->extraordinarios, $inhabiles);
+            : new self($this->fijos, $this->moviles, $this->finDeSemana, $this->extraordinarios, $inhabiles, $this->omitir);
     }
 
-    /** Si es feriado nacional o extraordinario. Un día no laborable no lo es. */
+    /** Si es feriado nacional, extraordinario o regional. Un día no laborable no lo es. */
     public function esFeriado(\DateTimeInterface|string $fecha): bool
     {
         return $this->delDia(self::fecha($fecha))?->tipo->esFeriado() ?? false;
@@ -221,7 +251,8 @@ final class Calendario
 
     /**
      * Si dos caen el mismo día, un feriado gana a un día no laborable; entre
-     * iguales, queda el primero: fijos, móviles y luego extraordinarios.
+     * iguales, queda el primero: fijos, móviles y luego extraordinarios. Los
+     * omitidos no entran.
      *
      * @return array<string, Feriado>
      */
@@ -238,17 +269,22 @@ final class Calendario
                 continue;
             }
 
-            self::agregar($feriados, new Feriado(CarbonImmutable::createStrict($anio, $fijo['mes'], $fijo['dia']), $fijo['nombre']));
+            $this->agregar($feriados, new Feriado(
+                CarbonImmutable::createStrict($anio, $fijo['mes'], $fijo['dia']),
+                $fijo['nombre'],
+                $fijo['tipo'] ?? TipoFeriado::Nacional,
+                clave: $fijo['clave'] ?? null,
+            ));
         }
 
         $pascua = Pascua::domingo($anio);
 
         foreach ($this->moviles as $movil) {
-            self::agregar($feriados, new Feriado($pascua->addDays($movil['dias']), $movil['nombre'], movil: true));
+            $this->agregar($feriados, new Feriado($pascua->addDays($movil['dias']), $movil['nombre'], movil: true, clave: $movil['clave'] ?? null));
         }
 
         foreach ($this->extraordinariosPorAnio[$anio] ?? [] as $feriado) {
-            self::agregar($feriados, $feriado);
+            $this->agregar($feriados, $feriado);
         }
 
         ksort($feriados);
@@ -257,9 +293,14 @@ final class Calendario
     }
 
     /** @param  array<string, Feriado>  $feriados */
-    private static function agregar(array &$feriados, Feriado $feriado): void
+    private function agregar(array &$feriados, Feriado $feriado): void
     {
         $clave = $feriado->fecha->toDateString();
+
+        if (isset($this->omitidos[$clave]) || isset($this->omitidos[$feriado->clave ?? ''])) {
+            return;
+        }
+
         $actual = $feriados[$clave] ?? null;
 
         if ($actual === null || (! $actual->tipo->esFeriado() && $feriado->tipo->esFeriado())) {
@@ -271,23 +312,32 @@ final class Calendario
     private static function extraordinario(array $definicion): Feriado
     {
         $fecha = $definicion['fecha'];
-
-        if (! preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $fecha, $partes) || ! checkdate((int) $partes[2], (int) $partes[3], (int) $partes[1])) {
-            throw new \InvalidArgumentException("La fecha [{$fecha}] del feriado extraordinario no es válida; usa el formato AAAA-MM-DD.");
-        }
+        $dia = self::fechaValida($fecha)
+            ?? throw new \InvalidArgumentException("La fecha [{$fecha}] del feriado extraordinario no es válida; usa el formato AAAA-MM-DD.");
 
         $tipo = TipoFeriado::tryFrom($definicion['tipo']);
 
         if ($tipo === null || $tipo === TipoFeriado::Nacional) {
-            throw new \InvalidArgumentException("El tipo [{$definicion['tipo']}] del {$fecha} no es válido; usa 'extraordinario' o 'no_laborable'.");
+            throw new \InvalidArgumentException("El tipo [{$definicion['tipo']}] del {$fecha} no es válido; usa 'extraordinario', 'regional' o 'no_laborable'.");
         }
 
         return new Feriado(
-            CarbonImmutable::createStrict((int) $partes[1], (int) $partes[2], (int) $partes[3]),
+            $dia,
             $definicion['nombre'],
             $tipo,
             norma: $definicion['norma'] ?? null,
         );
+    }
+
+    /** La fecha si el texto es una fecha AAAA-MM-DD que existe; si no, null. */
+    private static function fechaValida(string $texto): ?CarbonImmutable
+    {
+        if (! preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $texto, $partes)
+            || ! checkdate((int) $partes[2], (int) $partes[3], (int) $partes[1])) {
+            return null;
+        }
+
+        return CarbonImmutable::createStrict((int) $partes[1], (int) $partes[2], (int) $partes[3]);
     }
 
     /** La fecha de calendario, sin la hora; un DateTime conserva su propio día. */

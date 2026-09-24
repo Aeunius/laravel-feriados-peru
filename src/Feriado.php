@@ -14,6 +14,8 @@ final readonly class Feriado
         private bool $movil = false,
         /** La norma que lo declara, en los extraordinarios y no laborables. */
         public ?string $norma = null,
+        /** Identifica a los feriados del catálogo, para omitirlos: 'fuerza_aerea'. */
+        public ?string $clave = null,
     ) {}
 
     /** Si la fecha cambia cada año (depende de la Pascua). */

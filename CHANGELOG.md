@@ -18,6 +18,10 @@ proyecto usa [versionado semántico](https://semver.org/lang/es/).
   declaren sin esperar una versión nueva.
 - `esNoLaborable()`, `delAnio($anio, conNoLaborables: true)` y
   `conNoLaborablesInhabiles()`; opción `no_laborables_inhabiles`.
+- Feriados regionales o locales que se repiten cada año (opción `regionales`,
+  `TipoFeriado::Regional`), que cortan los plazos como los nacionales.
+- Opción `omitir`, para no considerar un feriado del paquete por su clave o una
+  fecha puntual. Cada feriado del catálogo trae su clave en `Feriado::$clave`.
 
 ### Cambiado
 

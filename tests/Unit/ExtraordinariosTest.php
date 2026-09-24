@@ -84,6 +84,6 @@ it('rechaza un extraordinario mal escrito', function (array $definicion, string 
 })->with([
     'fecha inexistente' => [['fecha' => '2026-02-30', 'nombre' => 'X', 'tipo' => 'no_laborable'], '2026-02-30'],
     'otro formato' => [['fecha' => '24/09/2026', 'nombre' => 'X', 'tipo' => 'no_laborable'], 'AAAA-MM-DD'],
-    'tipo desconocido' => [['fecha' => '2026-09-24', 'nombre' => 'X', 'tipo' => 'puente'], "'extraordinario' o 'no_laborable'"],
-    'nacional' => [['fecha' => '2026-09-24', 'nombre' => 'X', 'tipo' => 'nacional'], "'extraordinario' o 'no_laborable'"],
+    'tipo desconocido' => [['fecha' => '2026-09-24', 'nombre' => 'X', 'tipo' => 'puente'], "'extraordinario', 'regional' o 'no_laborable'"],
+    'nacional' => [['fecha' => '2026-09-24', 'nombre' => 'X', 'tipo' => 'nacional'], "'extraordinario', 'regional' o 'no_laborable'"],
 ]);

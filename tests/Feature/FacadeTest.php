@@ -39,3 +39,15 @@ it('toma los extraordinarios y los no laborables de la configuración', function
         ->and(Feriados::esNoLaborable('2026-07-27'))->toBeTrue()
         ->and(Feriados::esDiaHabil('2026-07-27'))->toBeTrue();
 });
+
+it('toma los regionales y los omitidos de la configuración', function () {
+    config([
+        'feriados-peru.regionales' => [['mes' => 9, 'dia' => 24, 'nombre' => 'Virgen de las Mercedes']],
+        'feriados-peru.omitir' => ['fuerza_aerea'],
+    ]);
+    app()->forgetInstance(Calendario::class);
+    Feriados::clearResolvedInstances();
+
+    expect(Feriados::esFeriado('2026-09-24'))->toBeTrue()
+        ->and(Feriados::esFeriado('2026-07-23'))->toBeFalse();
+});
