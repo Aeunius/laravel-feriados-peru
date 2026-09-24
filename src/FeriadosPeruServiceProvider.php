@@ -17,6 +17,6 @@ class FeriadosPeruServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        $this->app->singleton(Calendario::class, fn (): Calendario => new Calendario);
+        $this->app->singleton(Calendario::class, fn (): Calendario => Calendario::peru());
     }
 }
