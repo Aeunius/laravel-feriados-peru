@@ -3,6 +3,7 @@
 namespace Aeunius\FeriadosPeru;
 
 use Aeunius\FeriadosPeru\Support\Calendario;
+use Carbon\CarbonInterface;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -17,6 +18,11 @@ class FeriadosPeruServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        $this->app->singleton(Calendario::class, fn (): Calendario => Calendario::peru());
+        $this->app->singleton(Calendario::class, function (): Calendario {
+            /** @var array<int> $finDeSemana */
+            $finDeSemana = config('feriados-peru.fin_de_semana', [CarbonInterface::SATURDAY, CarbonInterface::SUNDAY]);
+
+            return Calendario::peru(array_values($finDeSemana));
+        });
     }
 }

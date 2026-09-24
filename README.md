@@ -1,7 +1,7 @@
 # Laravel Feriados Perú
 
-Feriados nacionales del Perú para Laravel: fijos y de Semana Santa, con el año
-desde el que rige cada uno. Sin conectarse a ningún servicio externo.
+Feriados nacionales del Perú y cálculo de plazos en días hábiles para Laravel,
+como los cuenta la Ley 27444. Sin conectarse a ningún servicio externo.
 
 > En desarrollo: todavía no hay una versión publicada.
 
@@ -43,6 +43,49 @@ Las fechas se aceptan como texto (`'2026-07-28'`) o como cualquier
 propia fecha. `proximo()` devuelve el primer feriado **después** de la fecha, sin
 contar la fecha misma.
 
+### Días hábiles y plazos
+
+Un día hábil no es feriado ni cae en fin de semana.
+
+```php
+Feriados::esDiaHabil('2026-07-28');                       // false
+
+// Notificado el lunes 27 de julio de 2026, un plazo de 5 días hábiles salta
+// Fiestas Patrias (28 y 29) y el fin de semana, y termina el 5 de agosto.
+Feriados::sumarDiasHabiles('2026-07-27', 5);              // CarbonImmutable 2026-08-05
+Feriados::diasHabilesEntre('2026-07-27', '2026-08-05');   // 5
+Feriados::esVencido('2026-07-27', 5);                     // ¿hoy ya pasó el 5 de agosto?
+Feriados::esVencido('2026-07-27', 5, hoy: '2026-08-05');  // false: el último día aún vale
+```
+
+El cómputo sigue el TUO de la Ley 27444: el plazo en días se cuenta en días
+hábiles consecutivos (art. 145), **a partir del día hábil siguiente** a la
+notificación (art. 144). Por eso:
+
+- `sumarDiasHabiles()` no cuenta la fecha de partida. Con días negativos cuenta
+  hacia atrás y con 0 devuelve la misma fecha.
+- `diasHabilesEntre()` tampoco cuenta `$desde`, pero sí `$hasta`: es la inversa
+  de `sumarDiasHabiles()`. Si `$hasta` es anterior, el resultado es negativo.
+- `esVencido()` compara contra hoy, en la zona horaria de la aplicación.
+
+Todavía no se excluyen los feriados regionales ni los días no laborables que
+declara el Gobierno.
+
+### Fin de semana
+
+Por defecto, sábado y domingo no son hábiles. Para una entidad que atiende los
+sábados, publica la configuración:
+
+```bash
+php artisan vendor:publish --tag=feriados-peru-config
+```
+
+y deja solo el domingo en `config/feriados-peru.php`:
+
+```php
+'fin_de_semana' => [CarbonInterface::SUNDAY],
+```
+
 ### Sin Laravel
 
 El motor no necesita la aplicación:
@@ -50,8 +93,11 @@ El motor no necesita la aplicación:
 ```php
 use Aeunius\FeriadosPeru\Support\Calendario;
 use Aeunius\FeriadosPeru\Support\Pascua;
+use Carbon\CarbonInterface;
 
 Calendario::peru()->esFeriado('2026-04-03');   // true (Viernes Santo)
+Calendario::peru(finDeSemana: [CarbonInterface::SUNDAY])
+    ->sumarDiasHabiles('2026-09-11', 1);       // sábado 2026-09-12
 Pascua::domingo(2026);                         // CarbonImmutable 2026-04-05
 ```
 

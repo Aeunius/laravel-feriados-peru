@@ -16,3 +16,7 @@ proyecto usa [versionado semántico](https://semver.org/lang/es/).
 - `Support\Calendario` y el facade `Feriados`: `esFeriado()`, `delAnio()` y
   `proximo()`.
 - Value object `Feriado` y enum `TipoFeriado`.
+- Días hábiles según la Ley 27444: `esDiaHabil()`, `sumarDiasHabiles()`,
+  `diasHabilesEntre()` y `esVencido()`.
+- Opción `fin_de_semana` en la configuración, para entidades que atienden los
+  sábados.
