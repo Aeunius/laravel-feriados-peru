@@ -7,6 +7,8 @@ proyecto usa [versionado semántico](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [1.0.0] - 2026-09-23
+
 ### Agregado
 
 - Días no laborables del sector público (`TipoFeriado::NoLaborable`) y feriados
@@ -47,5 +49,6 @@ Primera versión.
 - Opción `fin_de_semana` en la configuración, para entidades que atienden los
   sábados.
 
-[Sin publicar]: https://github.com/Aeunius/laravel-feriados-peru/compare/v0.2.0...HEAD
+[Sin publicar]: https://github.com/Aeunius/laravel-feriados-peru/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Aeunius/laravel-feriados-peru/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/Aeunius/laravel-feriados-peru/releases/tag/v0.2.0
