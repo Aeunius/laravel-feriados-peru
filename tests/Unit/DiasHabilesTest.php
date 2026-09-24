@@ -15,7 +15,8 @@ afterEach(function () {
 it('distingue los días hábiles', function (string $fecha, bool $esperado) {
     expect($this->calendario->esDiaHabil($fecha))->toBe($esperado);
 })->with([
-    'lunes común' => ['2026-07-27', true],
+    'lunes común' => ['2026-07-20', true],
+    'no laborable' => ['2026-07-27', false],
     'feriado en martes' => ['2026-07-28', false],
     'sábado' => ['2026-07-25', false],
     'domingo' => ['2026-07-26', false],
@@ -33,13 +34,13 @@ it('suma días hábiles desde el día hábil siguiente', function (string $desde
     'salta Semana Santa' => ['2026-04-01', 1, '2026-04-06'],
     'cruza el año' => ['2026-12-30', 3, '2027-01-05'],
     'cero días' => ['2026-07-28', 0, '2026-07-28'],
-    'hacia atrás' => ['2026-08-05', -5, '2026-07-27'],
+    'hacia atrás, salta el no laborable' => ['2026-08-05', -5, '2026-07-24'],
 ]);
 
 it('cuenta los días hábiles entre dos fechas', function (string $desde, string $hasta, int $esperado) {
     expect($this->calendario->diasHabilesEntre($desde, $hasta))->toBe($esperado);
 })->with([
-    'julio 2026, sin contar el 1' => ['2026-07-01', '2026-07-31', 19],
+    'julio 2026, sin el 1 ni el no laborable' => ['2026-07-01', '2026-07-31', 18],
     'la misma fecha' => ['2026-07-27', '2026-07-27', 0],
     'solo feriados y fin de semana' => ['2026-07-27', '2026-07-29', 0],
     'al revés, negativo' => ['2026-08-05', '2026-07-27', -5],

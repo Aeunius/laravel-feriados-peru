@@ -7,11 +7,13 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static bool esFeriado(\DateTimeInterface|string $fecha)
- * @method static \Illuminate\Support\Collection<int, \Aeunius\FeriadosPeru\Feriado> delAnio(int $anio)
+ * @method static bool esNoLaborable(\DateTimeInterface|string $fecha)
+ * @method static \Illuminate\Support\Collection<int, \Aeunius\FeriadosPeru\Feriado> delAnio(int $anio, bool $conNoLaborables = false)
  * @method static \Aeunius\FeriadosPeru\Feriado|null proximo(\DateTimeInterface|string $fecha)
  * @method static bool esDiaHabil(\DateTimeInterface|string $fecha)
  * @method static \Carbon\CarbonImmutable sumarDiasHabiles(\DateTimeInterface|string $fecha, int $dias)
  * @method static int diasHabilesEntre(\DateTimeInterface|string $desde, \DateTimeInterface|string $hasta)
+ * @method static Calendario conNoLaborablesInhabiles(bool $inhabiles = true)
  * @method static bool esVencido(\DateTimeInterface|string $fecha, int $dias, \DateTimeInterface|string|null $hoy = null)
  *
  * @see Calendario

@@ -24,3 +24,18 @@ it('toma el fin de semana de la configuración', function () {
 
     expect(Feriados::esDiaHabil('2026-09-12'))->toBeTrue();
 });
+
+it('toma los extraordinarios y los no laborables de la configuración', function () {
+    config([
+        'feriados-peru.extraordinarios' => [
+            ['fecha' => '2026-09-24', 'nombre' => 'Feriado de prueba', 'tipo' => 'extraordinario'],
+        ],
+        'feriados-peru.no_laborables_inhabiles' => false,
+    ]);
+    app()->forgetInstance(Calendario::class);
+    Feriados::clearResolvedInstances();
+
+    expect(Feriados::esFeriado('2026-09-24'))->toBeTrue()
+        ->and(Feriados::esNoLaborable('2026-07-27'))->toBeTrue()
+        ->and(Feriados::esDiaHabil('2026-07-27'))->toBeTrue();
+});

@@ -22,7 +22,14 @@ class FeriadosPeruServiceProvider extends PackageServiceProvider
             /** @var array<int> $finDeSemana */
             $finDeSemana = config('feriados-peru.fin_de_semana', [CarbonInterface::SATURDAY, CarbonInterface::SUNDAY]);
 
-            return Calendario::peru(array_values($finDeSemana));
+            /** @var array<array{fecha: string, nombre: string, tipo: string, norma?: string}> $extraordinarios */
+            $extraordinarios = config('feriados-peru.extraordinarios', []);
+
+            return Calendario::peru(
+                array_values($finDeSemana),
+                array_values($extraordinarios),
+                (bool) config('feriados-peru.no_laborables_inhabiles', true),
+            );
         });
     }
 }

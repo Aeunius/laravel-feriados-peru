@@ -68,8 +68,9 @@ notificación (art. 144). Por eso:
   de `sumarDiasHabiles()`. Si `$hasta` es anterior, el resultado es negativo.
 - `esVencido()` compara contra hoy, en la zona horaria de la aplicación.
 
-Todavía no se excluyen los feriados regionales ni los días no laborables que
-declara el Gobierno.
+Los días no laborables del sector público también cortan el plazo; ver
+[Días no laborables](#días-no-laborables). Los feriados regionales todavía no se
+excluyen.
 
 ### Fin de semana
 
@@ -126,11 +127,62 @@ Los del art. 6 del D. Leg. 713 y sus modificaciones: 16 en 2026.
 15 de junio de 2023, después del 7 de junio de ese año, así que el primer feriado
 fue en 2024.
 
-Todavía no incluye los feriados y días no laborables que el Gobierno declara
-cada año por decreto supremo.
-
 La Pascua se calcula con el algoritmo de Butcher, válido para cualquier año del
 calendario gregoriano (desde 1583).
+
+## Días no laborables
+
+Cada año el Gobierno declara por decreto supremo **días no laborables** para el
+sector público, casi siempre para armar feriados largos. No son feriados:
+
+- Solo obligan al sector público, que compensa las horas después. El sector
+  privado trabaja, salvo acuerdo con el empleador.
+- Los decretos los declaran **hábiles para efectos tributarios**.
+- Para el procedimiento administrativo, el TUO de la Ley 27444 (art. 145.1)
+  excluye del cómputo los días "no laborables del servicio".
+
+Por eso el paquete los distingue de los feriados:
+
+```php
+Feriados::esFeriado('2026-07-27');       // false
+Feriados::esNoLaborable('2026-07-27');   // true (D.S. 075-2026-PCM)
+Feriados::delAnio(2026);                 // 16 feriados
+Feriados::delAnio(2026, conNoLaborables: true);   // 18: suma el 2 ene y el 27 jul
+```
+
+Por defecto, **cortan los plazos**, como en la Ley 27444. Para un plazo
+tributario o del sector privado, cuéntalos como hábiles:
+
+```php
+Feriados::sumarDiasHabiles('2026-07-24', 1);                                  // 2026-07-30
+Feriados::conNoLaborablesInhabiles(false)->sumarDiasHabiles('2026-07-24', 1);  // 2026-07-27
+```
+
+o en toda la aplicación, con `'no_laborables_inhabiles' => false` en la
+configuración.
+
+El paquete trae los de alcance nacional desde 2025:
+
+| Fecha | Norma |
+|---|---|
+| 2 may 2025, 26 dic 2025, 2 ene 2026 | D.S. 042-2025-PCM |
+| 27 jul 2026 | D.S. 075-2026-PCM |
+
+### Agregar los que se declaren después
+
+No hace falta esperar una versión nueva. Publica la configuración y agrégalos en
+`extraordinarios`:
+
+```php
+'extraordinarios' => [
+    ['fecha' => '2026-12-24', 'nombre' => 'Día no laborable', 'tipo' => 'no_laborable', 'norma' => 'D.S. 999-2026-PCM'],
+    ['fecha' => '2026-10-15', 'nombre' => 'Feriado por ley', 'tipo' => 'extraordinario'],
+],
+```
+
+`tipo` es `no_laborable` (sector público, compensable) o `extraordinario` (un
+feriado para todos, por una sola vez). Si coincide con un feriado, gana el
+feriado. Una fecha o un tipo mal escritos lanzan una excepción al arrancar.
 
 ## Desarrollo
 

@@ -7,6 +7,24 @@ proyecto usa [versionado semántico](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+### Agregado
+
+- Días no laborables del sector público (`TipoFeriado::NoLaborable`) y feriados
+  extraordinarios (`TipoFeriado::Extraordinario`), con la norma que los declara
+  en `Feriado::$norma`.
+- Catálogo de días no laborables nacionales desde 2025 (D.S. 042-2025-PCM y
+  D.S. 075-2026-PCM).
+- Opción `extraordinarios` en la configuración, para agregar los que se
+  declaren sin esperar una versión nueva.
+- `esNoLaborable()`, `delAnio($anio, conNoLaborables: true)` y
+  `conNoLaborablesInhabiles()`; opción `no_laborables_inhabiles`.
+
+### Cambiado
+
+- Los días no laborables cortan los plazos por defecto (TUO de la Ley 27444,
+  art. 145.1): el 27 de julio de 2026 ya no es día hábil. Para volver al
+  comportamiento anterior, `'no_laborables_inhabiles' => false`.
+
 ## [0.2.0] - 2026-09-23
 
 Primera versión.
