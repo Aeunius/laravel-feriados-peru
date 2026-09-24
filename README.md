@@ -3,10 +3,10 @@
 Feriados nacionales del Perú y cálculo de plazos en días hábiles para Laravel,
 como los cuenta la Ley 27444. Sin conectarse a ningún servicio externo.
 
-> En desarrollo: todavía no hay una versión publicada.
-
 [![tests](https://github.com/Aeunius/laravel-feriados-peru/actions/workflows/tests.yml/badge.svg)](https://github.com/Aeunius/laravel-feriados-peru/actions/workflows/tests.yml)
-[![Licencia](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE.md)
+[![Versión en Packagist](https://img.shields.io/packagist/v/aeunius/laravel-feriados-peru.svg)](https://packagist.org/packages/aeunius/laravel-feriados-peru)
+[![Descargas](https://img.shields.io/packagist/dt/aeunius/laravel-feriados-peru.svg)](https://packagist.org/packages/aeunius/laravel-feriados-peru)
+[![Licencia](https://img.shields.io/packagist/l/aeunius/laravel-feriados-peru.svg)](LICENSE.md)
 
 ## Requisitos
 

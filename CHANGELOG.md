@@ -7,6 +7,10 @@ proyecto usa [versionado semántico](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.2.0] - 2026-09-23
+
+Primera versión.
+
 ### Agregado
 
 - Catálogo de feriados nacionales fijos (D. Leg. 713 y modificaciones), con el
@@ -20,3 +24,6 @@ proyecto usa [versionado semántico](https://semver.org/lang/es/).
   `diasHabilesEntre()` y `esVencido()`.
 - Opción `fin_de_semana` en la configuración, para entidades que atienden los
   sábados.
+
+[Sin publicar]: https://github.com/Aeunius/laravel-feriados-peru/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Aeunius/laravel-feriados-peru/releases/tag/v0.2.0
